@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../models/pokemon.dart';
-import '../services/pokemon_service.dart';
+import '../providers/pokemon_provider.dart';
+import 'pokemon_detail_screen.dart';
 import '../widgets/pokemon_card.dart';
 
-class PokedexScreen extends StatefulWidget {
-  const PokedexScreen({super.key, this.service});
+class PokedexScreen extends StatelessWidget {
+  const PokedexScreen({super.key});
 
-  final PokemonService? service;
-
-  @override
-  State<PokedexScreen> createState() => _PokedexScreenState();
-}
-
-class _PokedexScreenState extends State<PokedexScreen> {
   static const _tints = [
     Color(0xFFE7F3E9),
     Color(0xFFFFEFDF),
@@ -22,22 +16,9 @@ class _PokedexScreenState extends State<PokedexScreen> {
     Color(0xFFF1EAF6),
   ];
 
-  late final PokemonService _service = widget.service ?? PokemonService();
-  // FutureBuilder below displays this request's loading, result, and error states.
-  late Future<List<Pokemon>> _pokemonFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _pokemonFuture = _service.fetchPokemon(limit: 30);
-  }
-
-  void _retry() {
-    setState(() => _pokemonFuture = _service.fetchPokemon(limit: 30));
-  }
-
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<PokemonProvider>();
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 68,
@@ -52,6 +33,14 @@ class _PokedexScreenState extends State<PokedexScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Refresh Pokémon',
+            onPressed: provider.fetchPokemon,
+            icon: const Icon(Icons.refresh),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -85,64 +74,89 @@ class _PokedexScreenState extends State<PokedexScreen> {
               ),
             ),
             Expanded(
-              child: FutureBuilder<List<Pokemon>>(
-                future: _pokemonFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const _StatusView(
-                      icon: null,
-                      message: 'Loading Pokémon...',
-                      loading: true,
-                    );
-                  }
-
-                  if (snapshot.hasError) {
-                    return _StatusView(
-                      icon: Icons.wifi_off_outlined,
-                      message: 'Could not load Pokémon.',
-                      actionLabel: 'Try again',
-                      onAction: _retry,
-                    );
-                  }
-
-                  final pokemon = snapshot.data ?? const <Pokemon>[];
-                  if (pokemon.isEmpty) {
-                    return const _StatusView(
-                      icon: Icons.search_off,
-                      message: 'No Pokémon found.',
-                    );
-                  }
-
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      final columns = switch (constraints.maxWidth) {
-                        >= 900 => 4,
-                        >= 600 => 3,
-                        _ => 2,
-                      };
-
-                      return GridView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: columns,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.88,
-                        ),
-                        itemCount: pokemon.length,
-                        itemBuilder: (context, index) => PokemonCard(
-                          pokemon: pokemon[index],
-                          tint: _tints[index % _tints.length],
+              child: RefreshIndicator(
+                onRefresh: provider.fetchPokemon,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (provider.status == PokemonStatus.loading) {
+                      return _statusList(
+                        constraints.maxHeight,
+                        const _StatusView(
+                          icon: null,
+                          message: 'Loading Pokémon...',
+                          loading: true,
                         ),
                       );
-                    },
-                  );
-                },
+                    }
+
+                    if (provider.status == PokemonStatus.error) {
+                      return _statusList(
+                        constraints.maxHeight,
+                        _StatusView(
+                          icon: Icons.wifi_off_outlined,
+                          message: 'Could not load Pokémon.',
+                          actionLabel: 'Try again',
+                          onAction: provider.fetchPokemon,
+                        ),
+                      );
+                    }
+
+                    if (provider.pokemon.isEmpty) {
+                      return _statusList(
+                        constraints.maxHeight,
+                        const _StatusView(
+                          icon: Icons.search_off,
+                          message: 'No Pokémon found.',
+                        ),
+                      );
+                    }
+
+                    final columns = switch (constraints.maxWidth) {
+                      >= 900 => 4,
+                      >= 600 => 3,
+                      _ => 2,
+                    };
+
+                    return GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.88,
+                      ),
+                      itemCount: provider.pokemon.length,
+                      itemBuilder: (context, index) {
+                        final pokemon = provider.pokemon[index];
+                        return PokemonCard(
+                          pokemon: pokemon,
+                          tint: _tints[index % _tints.length],
+                          onTap: () {
+                            provider.selectPokemon(pokemon);
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const PokemonDetailScreen(),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _statusList(double height, Widget status) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [SizedBox(height: height, child: status)],
     );
   }
 }
@@ -187,10 +201,7 @@ class _StatusView extends StatelessWidget {
           ),
           if (actionLabel != null) ...[
             const SizedBox(height: 12),
-            FilledButton.tonal(
-              onPressed: onAction,
-              child: Text(actionLabel!),
-            ),
+            FilledButton.tonal(onPressed: onAction, child: Text(actionLabel!)),
           ],
         ],
       ),

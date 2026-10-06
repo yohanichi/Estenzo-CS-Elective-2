@@ -9,7 +9,7 @@ class PokemonService {
 
   final http.Client _client;
 
-  // One HTTP request returns one batch, so this is a Future rather than a Stream.
+  // One HTTP request returns a single batch, so expose it as a Future, not a Stream.
   Future<List<Pokemon>> fetchPokemon({int limit = 30}) async {
     final response = await _client.get(
       Uri.https('pokeapi.co', '/api/v2/pokemon', {'limit': '$limit'}),

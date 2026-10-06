@@ -9,21 +9,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:pokedex/models/pokemon.dart';
+import 'package:pokedex/providers/pokemon_provider.dart';
 import 'package:pokedex/screens/pokedex_screen.dart';
 import 'package:pokedex/services/pokemon_service.dart';
 
 void main() {
   testWidgets('shows the first Pokémon in the list', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: PokedexScreen(
-          service: FakePokemonService(
-            Future.value([samplePokemon]),
-          ),
-        ),
-      ),
+    await _pumpPokedex(
+      tester,
+      FakePokemonService(Future.value([samplePokemon])),
     );
     await tester.pumpAndSettle();
 
@@ -34,13 +31,7 @@ void main() {
 
   testWidgets('shows loading, error, and empty states', (tester) async {
     final completer = Completer<List<Pokemon>>();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: PokedexScreen(
-          service: FakePokemonService(completer.future),
-        ),
-      ),
-    );
+    await _pumpPokedex(tester, FakePokemonService(completer.future));
     expect(find.text('Loading Pokémon...'), findsOneWidget);
 
     completer.completeError(Exception('offline'));
@@ -52,16 +43,22 @@ void main() {
   testWidgets('shows an empty state when the API returns no Pokémon', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: PokedexScreen(
-          service: FakePokemonService(Future.value(const <Pokemon>[])),
-        ),
-      ),
+    await _pumpPokedex(
+      tester,
+      FakePokemonService(Future.value(const <Pokemon>[])),
     );
     await tester.pumpAndSettle();
     expect(find.text('No Pokémon found.'), findsOneWidget);
   });
+}
+
+Future<void> _pumpPokedex(WidgetTester tester, PokemonService service) {
+  return tester.pumpWidget(
+    ChangeNotifierProvider(
+      create: (_) => PokemonProvider(service: service),
+      child: const MaterialApp(home: PokedexScreen()),
+    ),
+  );
 }
 
 const samplePokemon = Pokemon(
