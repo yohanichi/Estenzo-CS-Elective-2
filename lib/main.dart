@@ -1,219 +1,149 @@
+import 'package:cs_elective_2/flight_details.dart';
+import 'package:cs_elective_2/pages/products.dart';
+import 'package:cs_elective_2/pages/inherited_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'theme/app_theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+
+  await Supabase.initialize(
+    url: dotenv.get('SUPABASE_URL'),
+    publishableKey: dotenv.get('SUPABASE_ANON_KEY'),
+  );
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
+  static const Color seedColor = Color(0xFF419A94);
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final themeProvider = ThemeProvider.of(context);
     return MaterialApp(
+      title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      home: const InstagramScreen(),
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: themeProvider?.themeMode ?? ThemeMode.light,
+      //  theme: ThemeData(
+      //         useMaterial3: true,
+
+      //  colorScheme: ColorScheme.fromSeed(
+      //     seedColor: const Color(0xFF419A94),
+      //   ).copyWith(
+      //     primaryContainer: const Color.fromARGB(255, 56, 148, 140),
+      //     onPrimaryContainer: const Color(0xFF00201E),
+      //   ),
+      //         scaffoldBackgroundColor: Colors.white,
+
+      //         appBarTheme: AppBarTheme(
+      //           backgroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+      //           foregroundColor: Colors.white,
+      //           elevation: 0,
+      //         ),
+
+      //         elevatedButtonTheme: ElevatedButtonThemeData(
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: seedColor,
+      //             foregroundColor: Colors.white,
+      //           ),
+      //         ),
+      //       ),
+      home: ProductsPage(),
+      //CounterPage()
+      // SyntaxWidget(
+      //    name2: 'Clark',
+      // ),
+      // home: MyHomePage(
+      //   title: 'CS Elective 2',
+      // ), //FlightDetails(), //CounterPage(),
+      // ),
     );
   }
 }
 
-class InstagramScreen extends StatelessWidget {
-  const InstagramScreen({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final int _counter = 0;
 
   @override
   Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
     return Scaffold(
-      backgroundColor: Colors.white,
-
-      body: SafeArea(
-        child: Column(
-          children: [
-
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 15, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-
-                  const Text(
-                  "Instagram",
-                  style: TextStyle(
-                    fontFamily: "Billabong",
-                    fontSize: 36,
-                    color: Colors.black,
-                  ),
-                ),
-
-                  Row(
-                    children: const [
-                      Icon(Icons.favorite_border, size: 28),
-                      SizedBox(width: 18),
-                      Icon(Icons.send_outlined, size: 28),
-                    ],
-                  )
-                ],
-              ),
-            ),
-
-            const Divider(height: 1),
-
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.pink,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 10),
-
-                  const Text(
-                    "yohan4ne",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  const Icon(Icons.more_vert),
-                ],
-              ),
-            ),
-
-
-            Expanded(
-  child: Container(
-    width: double.infinity,
-    decoration: const BoxDecoration(
-      image: DecorationImage(
-        image: AssetImage("assets/images/example.jpg"),
-        fit: BoxFit.cover,
+      appBar: AppBar(
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
       ),
-    ),
-  ),
-),
-
-
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: const [
-
-                  Icon(Icons.favorite_border, size: 28),
-
-                  SizedBox(width: 15),
-
-                  Icon(Icons.mode_comment_outlined, size: 28),
-
-                  SizedBox(width: 15),
-
-                  Icon(Icons.send_outlined, size: 28),
-
-                  Spacer(),
-
-                  Icon(Icons.bookmark_border, size: 28),
-                ],
-              ),
-            ),
-
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "3 Likes",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "yohan4ne ",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text:
-                                "My first post.",
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "#First   #Post   #IG   #Insta",
-                  style: TextStyle(
-                    color: Colors.blueGrey,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-
-            const Divider(height: 20),
-
-            Padding(
-              padding: const EdgeInsets.only(
-                  left: 25,
-                  right: 25,
-                  bottom: 10),
-              child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                children: const [
-
-                  Icon(Icons.home, size: 30),
-
-                  Icon(Icons.search, size: 30),
-
-                  Icon(Icons.add_box_outlined, size: 30),
-
-                  Icon(Icons.video_library_outlined,
-                      size: 30),
-
-                  Icon(Icons.person_outline,
-                      size: 30),
-                ],
-              ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          //
+          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+          // action in the IDE, or press "p" in the console), to see the
+          // wireframe for each widget.
+          mainAxisAlignment: .center,
+          children: [
+            const Text('You have pushed the button this many times:'),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const FlightDetails()),
+          );
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ),
     );
   }
