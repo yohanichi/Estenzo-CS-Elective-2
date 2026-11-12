@@ -1,5 +1,5 @@
 import 'package:cs_elective_2/flight_details.dart';
-import 'package:cs_elective_2/pages/products.dart';
+import 'package:cs_elective_2/pages/auth_gate.dart';
 import 'package:cs_elective_2/pages/inherited_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
       //           ),
       //         ),
       //       ),
-      home: ProductsPage(),
+      home: const AuthGate(),
       //CounterPage()
       // SyntaxWidget(
       //    name2: 'Clark',

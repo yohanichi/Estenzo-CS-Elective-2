@@ -1,16 +1,20 @@
 # cs_elective_2
 
-A new Flutter project.
+Flutter product catalog using Supabase, with GitHub OAuth sign-in.
 
-## Getting Started
+## GitHub OAuth setup
 
-This project is a starting point for a Flutter application.
+1. In GitHub, create an OAuth App. Set its Authorization callback URL to
+   `https://<your-project-ref>.supabase.co/auth/v1/callback`.
+2. In the Supabase Dashboard, open **Authentication → Providers → GitHub**,
+   enable GitHub, and enter the OAuth App client ID and client secret.
+3. In **Authentication → URL Configuration**, add
+   `io.supabase.flutter://login-callback/` to the allowed redirect URLs. Set
+   the Site URL to your web app's origin when running on the web.
+4. Run the app with its existing `.env` containing `SUPABASE_URL` and
+   `SUPABASE_ANON_KEY`. The app uses the native callback scheme
+   `io.supabase.flutter://login-callback/` on Android and iOS, and the configured
+   Supabase Site URL on web.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Users must complete the GitHub OAuth consent flow before the product catalog is
+shown. Use the sign-out icon in the catalog app bar to return to sign-in.

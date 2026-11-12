@@ -4,6 +4,7 @@ import 'package:cs_elective_2/pages/add_product.dart';
 import 'package:cs_elective_2/providers/category_provider.dart';
 import 'package:cs_elective_2/providers/product_filter_provider.dart';
 import 'package:cs_elective_2/providers/product_provider.dart';
+import 'package:cs_elective_2/providers/supabase_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -61,6 +62,17 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     );
   }
 
+  Future<void> _signOut() async {
+    try {
+      await ref.read(supabaseProvider).auth.signOut();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Sign out failed: $error')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productProvider);
@@ -86,6 +98,11 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
             },
           ),
           IconButton(icon: const Icon(Icons.shopping_bag), onPressed: () {}),
+          IconButton(
+            tooltip: 'Sign out',
+            icon: const Icon(Icons.logout),
+            onPressed: _signOut,
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
